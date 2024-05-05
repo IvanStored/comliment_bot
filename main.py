@@ -14,11 +14,11 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = getenv("TOKEN")
 
-WEB_SERVER_HOST = "127.0.0.1"
-WEB_SERVER_PORT = 8080
+WEB_SERVER_HOST = "::"
+WEB_SERVER_PORT = int(getenv("WEB_SERVER_PORT"))
 
 WEBHOOK_PATH = "/webhook"
-BASE_WEBHOOK_URL = "https://aiogram.dev/"
+BASE_WEBHOOK_URL = getenv("WEB_SERVER_HOST")
 
 router = Router()
 
