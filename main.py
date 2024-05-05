@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 from os import getenv
@@ -42,7 +43,7 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
-def main() -> None:
+async def main() -> None:
     dp = Dispatcher()
     dp.include_router(router)
 
@@ -51,7 +52,7 @@ def main() -> None:
     bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
     app = web.Application()
-    bot.set_my_commands(
+    await bot.set_my_commands(
         commands=[
             BotCommand(
                 command="compliment",
@@ -72,4 +73,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    main()
+    asyncio.run(main())
