@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import sys
 from os import getenv
@@ -13,7 +12,7 @@ from aiogram.utils.markdown import hbold
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from dotenv import load_dotenv
 
-from process_compliments import get_random_compliment
+from process_files import get_random_compliment, get_random_motivation
 
 load_dotenv()
 TOKEN = getenv("TOKEN")
@@ -34,9 +33,15 @@ async def command_start_handler(message: Message) -> None:
 
 
 @router.message(Command("compliment"))
-async def sent_compliment(message: Message) -> None:
+async def send_compliment(message: Message) -> None:
     compliment = get_random_compliment()
     await message.answer(text=compliment)
+
+
+@router.message(Command("motivation"))
+async def send_motivation(message: Message) -> None:
+    motivation = get_random_motivation()
+    await message.answer(text=motivation)
 
 
 async def on_startup(bot: Bot) -> None:
@@ -45,6 +50,10 @@ async def on_startup(bot: Bot) -> None:
             BotCommand(
                 command="compliment",
                 description="Випадковий комплімент"
+            ),
+            BotCommand(
+                command="motivation",
+                description="Тисни сюди, коли треба трохи мотивації"
             ),
         ]
     )
@@ -60,7 +69,7 @@ def main() -> None:
     bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
 
     app = web.Application()
-    
+
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,

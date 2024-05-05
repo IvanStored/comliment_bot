@@ -7,3 +7,11 @@ def get_random_compliment() -> str:
         random_line = random.choice(lines)
         random_string = random_line.strip()
         return random_string
+
+
+def get_random_motivation() -> str:
+    with open("motivation.txt", "r", encoding="UTF-8") as file:
+        lines = file.readlines()
+        random_line = random.choice(lines)
+        random_string = random_line.strip()
+        return random_string
