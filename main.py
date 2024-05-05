@@ -40,18 +40,6 @@ async def sent_compliment(message: Message) -> None:
 
 
 async def on_startup(bot: Bot) -> None:
-    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
-
-
-async def main() -> None:
-    dp = Dispatcher()
-    dp.include_router(router)
-
-    dp.startup.register(on_startup)
-
-    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
-
-    app = web.Application()
     await bot.set_my_commands(
         commands=[
             BotCommand(
@@ -60,6 +48,19 @@ async def main() -> None:
             ),
         ]
     )
+    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
+
+
+def main() -> None:
+    dp = Dispatcher()
+    dp.include_router(router)
+
+    dp.startup.register(on_startup)
+
+    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+
+    app = web.Application()
+    
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
@@ -73,4 +74,4 @@ async def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+    main()
