@@ -29,7 +29,7 @@ router = Router()
 @router.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
 
-    await message.answer(f"Hello, {hbold(message.from_user.full_name)}!")
+    await message.answer("Привіт, сонечко. Просто тисни на меню та обери потрібну тобі зараз команду")
 
 
 @router.message(Command("compliment"))
