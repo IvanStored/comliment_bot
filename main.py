@@ -51,12 +51,13 @@ async def calculate_days(message: Message) -> None:
     start_date = datetime.date(year=2020, month=8, day=2)
     total_days = today - start_date
     days_str = "днів"
-    if str(total_days).endswith("1"):
+    if str(total_days.days).endswith("1"):
         days_str = "день"
-    elif str(total_days).endswith("2"):
+    elif str(total_days.days).endswith("2"):
         days_str = "дня"
-    message_text = f"Ми провели {total_days} {days_str} разом, дякую тобі!!!"
+    message_text = f"Ми провели {total_days.days} {days_str} разом, дякую тобі!!!"
     await message.answer(text=message_text)
+
 
 async def on_startup(bot: Bot) -> None:
     await bot.set_my_commands(
