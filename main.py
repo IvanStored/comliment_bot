@@ -9,11 +9,14 @@ from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, BotCommand
-from aiogram.utils.markdown import hbold
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
+from aiogram.webhook.aiohttp_server import (
+    SimpleRequestHandler,
+    setup_application,
+)
 from dotenv import load_dotenv
 
 from process_files import get_random_compliment, get_random_motivation
+from random_cat_image import get_random_cat_image_url
 
 load_dotenv()
 TOKEN = getenv("TOKEN")
@@ -29,8 +32,15 @@ router = Router()
 
 @router.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
+    await message.answer(
+        "Привіт, сонечко. Просто тисни на меню та обери потрібну тобі зараз команду"
+    )
 
-    await message.answer("Привіт, сонечко. Просто тисни на меню та обери потрібну тобі зараз команду")
+
+@router.message(Command("mirror"))
+async def send_cat_image(message: Message) -> None:
+    image_url = get_random_cat_image_url()
+    await message.answer_photo(photo=image_url)
 
 
 @router.message(Command("compliment"))
@@ -55,7 +65,9 @@ async def calculate_days(message: Message) -> None:
         days_str = "день"
     elif str(total_days.days).endswith("2"):
         days_str = "дня"
-    message_text = f"Ми провели {total_days.days} {days_str} разом, дякую тобі!!!"
+    message_text = (
+        f"Ми провели {total_days.days} {days_str} разом, дякую тобі!!!"
+    )
     await message.answer(text=message_text)
 
 
@@ -63,16 +75,18 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_my_commands(
         commands=[
             BotCommand(
-                command="compliment",
-                description="Випадковий комплімент"
+                command="compliment", description="Випадковий комплімент"
             ),
             BotCommand(
                 command="motivation",
-                description="Тисни сюди, коли треба трохи мотивації"
+                description="Тисни сюди, коли треба трохи мотивації",
             ),
             BotCommand(
-                command="days",
-                description="Скільки чудових днів ми разом"
+                command="days", description="Скільки чудових днів ми разом"
+            ),
+            BotCommand(
+                command="mirror",
+                description="Це дзеркало, просто натисни і побачиш себе",
             ),
         ]
     )
