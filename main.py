@@ -1,5 +1,6 @@
 import datetime
 import logging
+import random
 import sys
 from os import getenv
 
@@ -28,7 +29,32 @@ WEBHOOK_PATH = "/webhook"
 BASE_WEBHOOK_URL = getenv("WEB_SERVER_HOST")
 
 router = Router()
-
+ANSWERS = [
+    'Це однозначно так.',
+    'Без сумніву.',
+    'Так, однозначно.',
+    'Можеш покластися на це.',
+    'Як я бачу, то так.',
+    'Ймовірно.',
+    'Перспективи хороші.',
+    'Так.',
+    'Знаки вказують на те, що так.',
+    'Відповідь нечітка, спробуйте ще раз.',
+    'Спитай пізніше.',
+    'Краще зараз тобі не відповідати.',
+    'Не можу передбачити зараз.',
+    'Сконцентруйся та спитай ще раз.',
+    "Не розраховуй на це.",
+    'Моя відповідь - ні.',
+    'Мої джерела кажуть ні.',
+    'Перспективи не дуже хороші.',
+    'Дуже сумнівно.',
+    'Звичайно ні.',
+    'Бог каже так.',
+    'Бог каже ні.',
+    'Ніхто не знає.',
+    "Я так не думаю.",
+]
 
 @router.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -70,6 +96,10 @@ async def calculate_days(message: Message) -> None:
     )
     await message.answer(text=message_text)
 
+@router.message(Command("magic_ball"))
+async def get_answer(message: Message) -> None:
+    await message.answer(text=random.choice(ANSWERS))
+
 
 async def on_startup(bot: Bot) -> None:
     await bot.set_my_commands(
@@ -88,6 +118,10 @@ async def on_startup(bot: Bot) -> None:
                 command="mirror",
                 description="Це дзеркало, просто натисни і побачиш себе",
             ),
+            BotCommand(
+                command="magic_ball",
+                description="Якщо не впевнена в рішенні, подумки задай питання та натисни сюди"
+            )
         ]
     )
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
