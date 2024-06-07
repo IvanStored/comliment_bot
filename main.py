@@ -4,6 +4,8 @@ import random
 import sys
 from os import getenv
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
 
 from aiogram import Bot, Dispatcher, Router
@@ -17,6 +19,7 @@ from aiogram.webhook.aiohttp_server import (
 from dotenv import load_dotenv
 
 from process_files import get_random_compliment, get_random_motivation
+from hangman import get_random_word
 from random_cat_image import get_random_cat_image_url
 
 load_dotenv()
@@ -30,31 +33,37 @@ BASE_WEBHOOK_URL = getenv("WEB_SERVER_HOST")
 
 router = Router()
 ANSWERS = [
-    'Це однозначно так.',
-    'Без сумніву.',
-    'Так, однозначно.',
-    'Можеш покластися на це.',
-    'Як я бачу, то так.',
-    'Ймовірно.',
-    'Перспективи хороші.',
-    'Так.',
-    'Знаки вказують на те, що так.',
-    'Відповідь нечітка, спробуйте ще раз.',
-    'Спитай пізніше.',
-    'Краще зараз тобі не відповідати.',
-    'Не можу передбачити зараз.',
-    'Сконцентруйся та спитай ще раз.',
+    "Це однозначно так.",
+    "Без сумніву.",
+    "Так, однозначно.",
+    "Можеш покластися на це.",
+    "Як я бачу, то так.",
+    "Ймовірно.",
+    "Перспективи хороші.",
+    "Так.",
+    "Знаки вказують на те, що так.",
+    "Відповідь нечітка, спробуйте ще раз.",
+    "Спитай пізніше.",
+    "Краще зараз тобі не відповідати.",
+    "Не можу передбачити зараз.",
+    "Сконцентруйся та спитай ще раз.",
     "Не розраховуй на це.",
-    'Моя відповідь - ні.',
-    'Мої джерела кажуть ні.',
-    'Перспективи не дуже хороші.',
-    'Дуже сумнівно.',
-    'Звичайно ні.',
-    'Бог каже так.',
-    'Бог каже ні.',
-    'Ніхто не знає.',
+    "Моя відповідь - ні.",
+    "Мої джерела кажуть ні.",
+    "Перспективи не дуже хороші.",
+    "Дуже сумнівно.",
+    "Звичайно ні.",
+    "Бог каже так.",
+    "Бог каже ні.",
+    "Ніхто не знає.",
     "Я так не думаю.",
 ]
+games = {}
+
+
+class HangmanState(StatesGroup):
+    waiting_for_letter = State()
+
 
 @router.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -96,9 +105,58 @@ async def calculate_days(message: Message) -> None:
     )
     await message.answer(text=message_text)
 
+
 @router.message(Command("magic_ball"))
 async def get_answer(message: Message) -> None:
     await message.answer(text=random.choice(ANSWERS))
+
+
+@router.message(Command("new_game"))
+async def new_game(message: Message, state: FSMContext):
+    word = get_random_word()
+    games[message.from_user.id] = {
+        "word": word,
+        "guessed": ["_" for _ in word],
+        "tries": 7,
+        "wrong_guesess": [],
+    }
+    await message.reply(
+        f"Нова гра почата! Слово: {' '.join(games[message.from_user.id]['guessed'])}"
+    )
+    await state.set_state(HangmanState.waiting_for_letter)
+
+
+@router.message(state=HangmanState.waiting_for_letter)
+async def guess_letter(message: Message, state: FSMContext):
+    game = games.get(message.from_user.id)
+    letter = message.text.lower()
+    if not letter.isalpha() or len(letter) != 1:
+        await message.reply("Це не буква")
+        return
+    if letter in game["guessed"] or letter in game["wrong_guesses"]:
+        await message.reply("Ти вже вгадала цю букву, спробуй іншу.")
+        return
+
+    if letter in game["word"]:
+        for index, char in enumerate(game["word"]):
+            if char == letter:
+                game["guessed"][index] = letter
+        await message.reply(f"Молодець! Слово: {' '.join(game['guessed'])}")
+    else:
+        game["tries"] -= 1
+        game["wrong_guesses"].append(letter)
+        await message.reply(
+            f"Неправильно( В тебе лишилося {game['tries']} спроб.\nНеправильні букви: {', '.join(game['wrong_guesses'])}"
+        )
+
+    if "_" not in game["guessed"]:
+        await message.reply(f"Молодець! Ти вгадала слово: {game['word']}")
+        await state.clear()
+        games.pop(message.from_user.id, None)
+    elif game["tries"] == 0:
+        await message.reply(f"Гра завершена! Слово було: {game['word']}")
+        await state.clear()
+        games.pop(message.from_user.id, None)
 
 
 async def on_startup(bot: Bot) -> None:
@@ -120,8 +178,11 @@ async def on_startup(bot: Bot) -> None:
             ),
             BotCommand(
                 command="magic_ball",
-                description="Якщо не впевнена в рішенні, подумки задай питання та натисни сюди"
-            )
+                description="Якщо не впевнена в рішенні, подумки задай питання та натисни сюди",
+            ),
+            BotCommand(
+                command="new_game", description="Гра в шибеницю, якщо нудно)"
+            ),
         ]
     )
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
