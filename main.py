@@ -115,10 +115,10 @@ async def get_answer(message: Message) -> None:
 async def new_game(message: Message, state: FSMContext):
     word = get_random_word()
     games[message.from_user.id] = {
-        "word": word,
-        "guessed": ["_" for _ in word],
+        "word": word.strip().replace("\n", ""),
+        "guessed": ["_" for _ in range(len(word)-1)],
         "tries": 7,
-        "wrong_guesess": [],
+        "wrong_guesses": [],
     }
     await message.reply(
         f"Нова гра почата! Слово: {' '.join(games[message.from_user.id]['guessed'])}"
@@ -126,7 +126,7 @@ async def new_game(message: Message, state: FSMContext):
     await state.set_state(HangmanState.waiting_for_letter)
 
 
-@router.message(state=HangmanState.waiting_for_letter)
+@router.message(HangmanState.waiting_for_letter)
 async def guess_letter(message: Message, state: FSMContext):
     game = games.get(message.from_user.id)
     letter = message.text.lower()
