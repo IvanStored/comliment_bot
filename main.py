@@ -7,9 +7,9 @@ from os import getenv
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
-
-from aiogram import Bot, Dispatcher, Router
 from aiogram.enums import ParseMode
+from aiogram import Bot, Dispatcher, Router
+from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, BotCommand
 from aiogram.webhook.aiohttp_server import (
@@ -204,7 +204,7 @@ def main() -> None:
 
     dp.startup.register(on_startup)
 
-    bot = Bot(TOKEN, parse_mode=ParseMode.HTML)
+    bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
     app = web.Application()
 
