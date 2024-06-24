@@ -18,6 +18,7 @@ from aiogram.webhook.aiohttp_server import (
 )
 from dotenv import load_dotenv
 
+from google_photos import get_random_image_url
 from process_files import get_random_compliment, get_random_motivation
 from hangman import get_random_word
 from random_cat_image import get_random_cat_image_url
@@ -75,6 +76,12 @@ async def command_start_handler(message: Message) -> None:
 @router.message(Command("mirror"))
 async def send_cat_image(message: Message) -> None:
     image_url = get_random_cat_image_url()
+    await message.answer_photo(photo=image_url)
+
+
+@router.message(Command("random_photo"))
+async def send_random_image(message: Message) -> None:
+    image_url = get_random_image_url()
     await message.answer_photo(photo=image_url)
 
 
@@ -182,6 +189,9 @@ async def on_startup(bot: Bot) -> None:
             ),
             BotCommand(
                 command="new_game", description="Гра в шибеницю, якщо нудно)"
+            ),
+            BotCommand(
+                command="random_photo", description="Випадкова наша фотка (чи тільки твоя, там трохи є)"
             ),
         ]
     )

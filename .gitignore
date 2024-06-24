@@ -2,3 +2,6 @@ venv/
 .idea/
 .env
 __pycache__/
+*.token
+*.json
+*.log
