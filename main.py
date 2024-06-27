@@ -25,13 +25,14 @@ from random_cat_image import get_random_cat_image_url
 
 load_dotenv()
 TOKEN = getenv("TOKEN")
-
+ADMIN_USER_ID = int(getenv("ADMIN_USER_ID"))
+RECEIVER_USER_ID = int(getenv("RECEIVER_USER_ID"))
 WEB_SERVER_HOST = "::"
 WEB_SERVER_PORT = int(getenv("WEB_SERVER_PORT"))
 
 WEBHOOK_PATH = "/webhook"
 BASE_WEBHOOK_URL = getenv("WEB_SERVER_HOST")
-
+bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 router = Router()
 ANSWERS = [
     "Це однозначно так.",
@@ -166,6 +167,12 @@ async def guess_letter(message: Message, state: FSMContext):
         games.pop(message.from_user.id, None)
 
 
+@router.message()
+async def echo_handler(message: Message) -> None:
+    if message.from_user.id == ADMIN_USER_ID:
+        await bot.send_message(chat_id=RECEIVER_USER_ID, text=message.text)
+
+
 async def on_startup(bot: Bot) -> None:
     await bot.set_my_commands(
         commands=[
@@ -198,13 +205,13 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
-def main() -> None:
+def main(bot) -> None:
     dp = Dispatcher()
     dp.include_router(router)
 
     dp.startup.register(on_startup)
 
-    bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
 
     app = web.Application()
 
@@ -221,4 +228,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    main()
+    main(bot=bot)
