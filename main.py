@@ -171,6 +171,7 @@ async def guess_letter(message: Message, state: FSMContext):
 async def echo_handler(message: Message) -> None:
     if message.from_user.id == ADMIN_USER_ID:
         await bot.send_message(chat_id=RECEIVER_USER_ID, text=message.text)
+        await message.answer(text="Повідомлення відправлено")
 
 
 async def on_startup(bot: Bot) -> None:
@@ -210,8 +211,6 @@ def main(bot) -> None:
     dp.include_router(router)
 
     dp.startup.register(on_startup)
-
-
 
     app = web.Application()
 
