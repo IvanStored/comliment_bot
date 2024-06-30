@@ -171,15 +171,10 @@ async def guess_letter(message: Message, state: FSMContext):
 @router.message()
 async def echo_handler(message: Message) -> None:
     if message.from_user.id == ADMIN_USER_ID:
-        if message.content_type == ContentType.PHOTO:
-            photo_id = message.photo[-1].file_id
-            file = await bot.get_file(photo_id)
-            await bot.download_file(file.file_path, "image.jpg")
-            await bot.send_photo(chat_id=ADMIN_USER_ID, photo="image.jpg")
-            os.remove("image.jpg")
-        else:
-            await bot.send_message(chat_id=ADMIN_USER_ID, text=message.text)
-        await message.answer(text="Повідомлення відправлено")
+        try:
+            await message.send_copy(chat_id=ADMIN_USER_ID)
+        except TypeError:
+            await message.answer("Nice try!")
 
 
 async def on_startup(bot: Bot) -> None:
