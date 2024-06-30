@@ -7,7 +7,7 @@ from os import getenv
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
-from aiogram.enums import ParseMode
+from aiogram.enums import ParseMode, ContentType
 from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import CommandStart, Command
@@ -170,7 +170,12 @@ async def guess_letter(message: Message, state: FSMContext):
 @router.message()
 async def echo_handler(message: Message) -> None:
     if message.from_user.id == ADMIN_USER_ID:
-        await bot.send_message(chat_id=RECEIVER_USER_ID, text=message.text)
+        if message.content_type == ContentType.PHOTO:
+            photo = message.photo[-1].file_id
+            file = await bot.get_file(photo)
+            await bot.send_photo(chat_id=ADMIN_USER_ID, photo=file.file_path)
+        else:
+            await bot.send_message(chat_id=ADMIN_USER_ID, text=message.text)
         await message.answer(text="Повідомлення відправлено")
 
 
