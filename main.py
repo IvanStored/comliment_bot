@@ -172,7 +172,8 @@ async def guess_letter(message: Message, state: FSMContext):
 async def echo_handler(message: Message) -> None:
     if message.from_user.id == ADMIN_USER_ID:
         try:
-            await message.send_copy(chat_id=ADMIN_USER_ID)
+            await message.send_copy(chat_id=RECEIVER_USER_ID)
+            await message.answer(text="message sended")
         except TypeError:
             await message.answer("Nice try!")
 
