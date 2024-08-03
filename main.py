@@ -222,6 +222,12 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
+def schedule_loop():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
 def main(bot) -> None:
     dp = Dispatcher()
     dp.include_router(router)
@@ -238,12 +244,9 @@ def main(bot) -> None:
 
     setup_application(app, dp, bot=bot)
 
-    # web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
-    server_thread = Thread(target=web.run_app, args=(app,), kwargs={"host": WEB_SERVER_HOST, "port": WEB_SERVER_PORT})
+    server_thread = Thread(target=schedule_loop)
     server_thread.start()
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
 
 if __name__ == "__main__":
