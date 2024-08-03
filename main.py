@@ -222,11 +222,11 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
-def run_async_job(coroutine):
-    asyncio.run(coroutine())
+def run_async_job(coroutine, loop):
+    asyncio.run_coroutine_threadsafe(coroutine(), loop)
 
 
-def schedule_loop():
+def schedule_loop(loop):
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -248,8 +248,12 @@ def main(bot) -> None:
 
     setup_application(app, dp, bot=bot)
 
-    server_thread = Thread(target=schedule_loop)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    server_thread = Thread(target=schedule_loop, args=(loop,))
     server_thread.start()
+
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
 
