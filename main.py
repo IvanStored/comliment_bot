@@ -3,8 +3,11 @@ import logging
 import os
 import random
 import sys
+import time
 from os import getenv
 
+import pytz
+import schedule
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
@@ -18,8 +21,9 @@ from aiogram.webhook.aiohttp_server import (
     setup_application,
 )
 from dotenv import load_dotenv
-
+from schedule import every, repeat, run_pending
 from google_photos import get_random_image_url
+from horoscope import get_horoscope_for_today, translate_horoscope_data
 from process_files import get_random_compliment, get_random_motivation
 from hangman import get_random_word
 from random_cat_image import get_random_cat_image_url
@@ -66,6 +70,14 @@ games = {}
 
 class HangmanState(StatesGroup):
     waiting_for_letter = State()
+
+
+@repeat(every().day.at("11:00"))
+async def send_horoscope() -> None:
+    horoscope_data = get_horoscope_for_today()
+    translated_horoscope = translate_horoscope_data(english_data=horoscope_data)
+    text = f"Твій гороскоп на сьогоднішній день:\n{translated_horoscope}"
+    await bot.send_message(chat_id=RECEIVER_USER_ID, text=text)
 
 
 @router.message(CommandStart())
@@ -231,4 +243,7 @@ def main(bot) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    main(bot=bot)
+    main(bot)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
