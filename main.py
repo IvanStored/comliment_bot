@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import logging
 import os
@@ -72,7 +73,6 @@ class HangmanState(StatesGroup):
     waiting_for_letter = State()
 
 
-@repeat(every().day.at("11:00"))
 async def send_horoscope() -> None:
     horoscope_data = get_horoscope_for_today()
     translated_horoscope = translate_horoscope_data(english_data=horoscope_data)
@@ -222,6 +222,10 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
+def run_async_job(coroutine):
+    asyncio.run(coroutine())
+
+
 def schedule_loop():
     while True:
         schedule.run_pending()
@@ -251,4 +255,5 @@ def main(bot) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    schedule.every().day.at("11:00").do(run_async_job, send_horoscope)
     main(bot)
