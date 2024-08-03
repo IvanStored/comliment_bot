@@ -5,8 +5,8 @@ import random
 import sys
 import time
 from os import getenv
+from threading import Thread
 
-import pytz
 import schedule
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -238,12 +238,14 @@ def main(bot) -> None:
 
     setup_application(app, dp, bot=bot)
 
-    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    # web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+    server_thread = Thread(target=web.run_app, args=(app,), kwargs={"host": WEB_SERVER_HOST, "port": WEB_SERVER_PORT})
+    server_thread.start()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
     main(bot)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
