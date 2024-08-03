@@ -1,18 +1,16 @@
-import asyncio
 import datetime
 import logging
-import os
+
 import random
 import sys
-import time
-from os import getenv
-from threading import Thread
 
-import schedule
+from os import getenv
+
+import aiocron
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
-from aiogram.enums import ParseMode, ContentType
+from aiogram.enums import ParseMode
 from aiogram import Bot, Dispatcher, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.filters import CommandStart, Command
@@ -22,7 +20,6 @@ from aiogram.webhook.aiohttp_server import (
     setup_application,
 )
 from dotenv import load_dotenv
-from schedule import every, repeat, run_pending
 from google_photos import get_random_image_url
 from horoscope import get_horoscope_for_today, translate_horoscope_data
 from process_files import get_random_compliment, get_random_motivation
@@ -78,6 +75,11 @@ async def send_horoscope() -> None:
     translated_horoscope = translate_horoscope_data(english_data=horoscope_data)
     text = f"Твій гороскоп на сьогоднішній день:\n{translated_horoscope}"
     await bot.send_message(chat_id=RECEIVER_USER_ID, text=text)
+
+
+@aiocron.crontab("* * * * *")
+async def scheduled_task():
+    await send_horoscope()
 
 
 @router.message(CommandStart())
@@ -222,17 +224,6 @@ async def on_startup(bot: Bot) -> None:
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
-def run_async_job(coroutine, loop):
-    asyncio.run_coroutine_threadsafe(coroutine(), loop)
-
-
-def schedule_loop(loop):
-    asyncio.set_event_loop(loop)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-
 def main(bot) -> None:
     dp = Dispatcher()
     dp.include_router(router)
@@ -249,17 +240,9 @@ def main(bot) -> None:
 
     setup_application(app, dp, bot=bot)
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    server_thread = Thread(target=schedule_loop, args=(loop,))
-    server_thread.start()
-
     web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
 
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    scheduler_loop = asyncio.new_event_loop()
-    schedule.every().day.at("11:00").do(run_async_job, send_horoscope, schedule_loop)
     main(bot)
