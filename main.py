@@ -227,6 +227,7 @@ def run_async_job(coroutine, loop):
 
 
 def schedule_loop(loop):
+    asyncio.set_event_loop(loop)
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -259,5 +260,6 @@ def main(bot) -> None:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    schedule.every().day.at("11:00").do(run_async_job, send_horoscope)
+    scheduler_loop = asyncio.new_event_loop()
+    schedule.every().day.at("11:00").do(run_async_job, send_horoscope, schedule_loop)
     main(bot)
