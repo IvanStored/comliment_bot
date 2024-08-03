@@ -6,7 +6,6 @@ import sys
 
 from os import getenv
 
-import aiocron
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiohttp import web
@@ -70,16 +69,12 @@ class HangmanState(StatesGroup):
     waiting_for_letter = State()
 
 
-async def send_horoscope() -> None:
+@router.message(Command("horoscope"))
+async def send_horoscope(message: Message) -> None:
     horoscope_data = get_horoscope_for_today()
     translated_horoscope = translate_horoscope_data(english_data=horoscope_data)
     text = f"Твій гороскоп на сьогоднішній день:\n{translated_horoscope}"
-    await bot.send_message(chat_id=RECEIVER_USER_ID, text=text)
-
-
-@aiocron.crontab("* * * * *")
-async def scheduled_task():
-    await send_horoscope()
+    await message.answer(text=text)
 
 
 @router.message(CommandStart())
@@ -218,6 +213,9 @@ async def on_startup(bot: Bot) -> None:
             ),
             BotCommand(
                 command="random_photo", description="Випадкова наша фотка (чи тільки твоя, там трохи є)"
+            ),
+            BotCommand(
+                command="horoscope", description="Гороскоп на сьогоднішній день"
             ),
         ]
     )
