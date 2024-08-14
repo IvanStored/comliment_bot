@@ -13,3 +13,7 @@ def get_random_image_url() -> str:
     media_iterator = media_manager.list()
     photos = [image["baseUrl"] for image in media_iterator]
     return random.choice(photos)
+
+
+if __name__ == '__main__':
+    get_random_image_url()
