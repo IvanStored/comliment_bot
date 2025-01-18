@@ -93,8 +93,10 @@ async def send_cat_image(message: Message) -> None:
 @router.message(Command("random_photo"))
 async def send_random_image(message: Message) -> None:
     image_url = get_random_image_url()
-    await message.answer_photo(photo=image_url)
-
+    if image_url:
+        await message.answer_photo(photo=image_url)
+    else:
+        await message.answer(text="Недоступно в даний момент, зверніться до адміністратора")
 
 @router.message(Command("compliment"))
 async def send_compliment(message: Message) -> None:
