@@ -15,7 +15,7 @@ url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
 def send_message() -> None:
     horoscope = translate_horoscope_data(english_data=get_horoscope_for_today(), api_key=DEEPL_API)
-    requests.post(url=url, data={"chat_id": ADMIN_USER_ID, "text": horoscope})
+    requests.post(url=url, data={"chat_id": RECEIVER_USER_ID, "text": horoscope})
 
 
 if __name__ == '__main__':
