@@ -13,7 +13,7 @@ url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
 
 def send_message() -> None:
-    horoscope = translate_horoscope_data(english_data=get_horoscope_for_today())
+    horoscope = get_horoscope_for_today()
     requests.post(url=url, data={"chat_id": ADMIN_USER_ID, "text": horoscope})
 
 
