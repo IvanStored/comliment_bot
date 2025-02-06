@@ -1,5 +1,5 @@
 import requests
-from deep_translator import GoogleTranslator
+import deepl
 URL = "https://horoscope-app-api.vercel.app/api/v1/get-horoscope/daily"
 
 
@@ -10,8 +10,7 @@ def get_horoscope_for_today() -> str:
     return horoscope
 
 
-def translate_horoscope_data(english_data: str) -> str:
-    translator = GoogleTranslator(source="auto", target="uk")
-    translated_data = translator.translate(english_data)
-    return translated_data
-
+def translate_horoscope_data(english_data: str, api_key: str) -> str:
+    translator = deepl.Translator(auth_key=api_key)
+    translated_data = translator.translate_text(english_data, target_lang="uk")
+    return str(translated_data)
